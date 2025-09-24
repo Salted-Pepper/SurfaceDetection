@@ -17,6 +17,8 @@ class Agent:
         self.remaining_maintenance = 0
         self.colour = colour
 
+        self.patrol_location = None
+
     def __repr__(self):
         return (f"Agent {self.agent_id} - "
                 f"Endurance: {self.remaining_endurance} - "

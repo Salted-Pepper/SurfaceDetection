@@ -1,7 +1,9 @@
 import json
-
+import random
+import matplotlib.colors as mcolors
 
 # World
+world = None
 world_time = 0
 
 TIME_DELTA = 1
@@ -9,8 +11,16 @@ BASELINE_HEIGHT = 600
 AREA_WIDTH = 4_500
 AREA_ANGLE = 15
 
+AREA_BORDER = 100
+GRID_SIZE = 10
+
+PATROL_ZONE_ITERATIONS = 200
+
 SEARCHER = "SEARCHER"
 TRAVELLER = "TRAVELLER"
+
+colors = random.choice(list(mcolors.CSS4_COLORS.keys()))
+random.shuffle(colors)
 
 
 def import_agent_data() -> dict:
