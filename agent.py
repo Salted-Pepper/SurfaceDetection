@@ -4,7 +4,7 @@ agent_id = 0
 
 
 class Agent:
-    def __init__(self, model: str, endurance: float, speed: float, maintenance: float, colour: str):
+    def __init__(self, model: str, endurance: float, speed: float, maintenance: float, color: str):
         global agent_id
 
         self.agent_id = agent_id
@@ -15,7 +15,7 @@ class Agent:
         self.speed = speed
         self.maintenance_time = maintenance
         self.remaining_maintenance = 0
-        self.colour = colour
+        self.color = color
 
         self.patrol_location = None
 

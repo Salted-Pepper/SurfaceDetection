@@ -8,18 +8,18 @@ world_time = 0
 
 TIME_DELTA = 1
 BASELINE_HEIGHT = 600
-AREA_WIDTH = 4_500
+AREA_WIDTH = 4500
 AREA_ANGLE = 15
 
 AREA_BORDER = 100
-GRID_SIZE = 10
+GRID_SIZE = 20
 
-PATROL_ZONE_ITERATIONS = 200
+PATROL_ZONE_ITERATIONS = 500
 
 SEARCHER = "SEARCHER"
 TRAVELLER = "TRAVELLER"
 
-colors = random.choice(list(mcolors.CSS4_COLORS.keys()))
+colors = list(mcolors.CSS4_COLORS.keys())
 random.shuffle(colors)
 
 

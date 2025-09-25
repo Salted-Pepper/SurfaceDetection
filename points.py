@@ -5,7 +5,7 @@ import settings
 point_id = 0
 
 class Point:
-    def __init__(self, x, y, fixed=True, strength=None):
+    def __init__(self, x, y):
         global point_id
         self.point_id = point_id
         point_id += 1
@@ -40,9 +40,10 @@ class Point:
         raise ValueError(f"Invalid distance metric {metric}")
 
 class PatrolLocation(Point):
-    def __init__(self, x, y, strength: float):
-        super().__init__(self, x, y)
+    def __init__(self, x, y, strength: float, radius: float):
+        super().__init__(x, y)
         self.strength = strength
+        self.radius = radius
 
         self.receptors = []
         self.color = settings.colors.pop()
@@ -51,8 +52,23 @@ class PatrolLocation(Point):
 
         self.current_agent = None
 
+    def observe_pressure(self, all_points: list):
+        n = len(all_points)
+        new_x = 0
+        new_y = 0
+
+        for point in all_points:
+            x_n, y_n = self.pressure(point)
+            new_x += x_n / n
+            new_y += y_n / n
+
+        self.next_x = new_x
+        self.next_y = new_y
+        print(f"Moving point from {self.x}, {self.y} to {self.next_x}, {self.next_y}")
+
+
     def pressure(self, other) -> tuple[float, float]:
-        distance = math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
+        distance = self.distance_to(other, metric="adj manhattan")
         strength = self.strength + other.strength
 
         if distance < 0.001:

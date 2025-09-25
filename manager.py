@@ -1,10 +1,9 @@
 import settings
-
 from agent import Agent
-
-import numpy as np
-
 from points import PatrolLocation
+
+import math
+import numpy as np
 
 
 class AgentType:
@@ -15,6 +14,7 @@ class AgentType:
         self.utilisation = None
         self.last_activation = -np.inf
 
+        self.radius = values["radius"]
         self.quantity = values["quantity"]
         self.speed = values["speed"]
         self.endurance = values["endurance"]
@@ -25,7 +25,7 @@ class AgentType:
         self.ideal_utilisation = (self.endurance / self.speed) / ((self.endurance / self.speed) + self.maintenance)
         self.trip_time = self.endurance / self.speed
         self.activation_interval = (self.trip_time + self.maintenance) / self.quantity
-        self.concurrent_agents = np.floor(self.quantity * self.ideal_utilisation)
+        self.concurrent_agents = int(np.floor(self.quantity * self.ideal_utilisation))
 
         self.patrol_locations = []
 
@@ -60,7 +60,7 @@ class AgentType:
     def create_patrol_location(self) -> PatrolLocation:
         x_coord = np.random.uniform(0, settings.AREA_WIDTH)
         y_coord = np.random.uniform(0, settings.BASELINE_HEIGHT)
-        location = PatrolLocation(x_coord, y_coord, strength=self.speed * self.endurance)
+        location = PatrolLocation(x_coord, y_coord, strength=self.speed * self.endurance, radius=self.radius)
         self.patrol_locations.append(location)
         return location
 
@@ -73,7 +73,7 @@ class Manager:
         for at in self.agent_types:
             for _ in range(at.quantity):
                 agent = Agent(model=at.model, speed=at.speed, endurance=at.endurance,
-                              maintenance=at.maintenance, colour=at.colour)
+                              maintenance=at.maintenance, color=at.color)
                 at.inactive_agents.append(agent)
 
     def update_agents(self):
@@ -86,7 +86,7 @@ class SearchManager(Manager):
         agent_types = settings.AGENT_DATA.keys()
 
         for at in agent_types:
-            if at.team == settings.SEARCHER:
+            if settings.AGENT_DATA[at]["team"] == settings.SEARCHER:
                 self.agent_types.append(AgentType(model=at, values=settings.AGENT_DATA[at]))
 
         self.create_agents()
@@ -115,21 +115,35 @@ class SearchManager(Manager):
         for at in self.agent_types:
             for _ in range(at.concurrent_agents):
                 self.patrol_locations.append(at.create_patrol_location())
+                print(f"Created patrol location at {self.patrol_locations[-1]}")
+        self.normalize_strength()
         self.distribute_patrol_locations()
+
+    def normalize_strength(self):
+        total_strength = 0
+        for pl in self.patrol_locations:
+            total_strength += pl.strength
+        area_size = settings.AREA_WIDTH * settings.BASELINE_HEIGHT
+        for pl in self.patrol_locations:
+            pl.strength = (pl.strength/total_strength) * math.sqrt(area_size)
 
     def distribute_patrol_locations(self):
         for _ in range(settings.PATROL_ZONE_ITERATIONS):
             for pl in self.patrol_locations:
-                pl.observe_pressure()
+                    pl.observe_pressure(self.patrol_locations)
 
             for pl in self.patrol_locations:
                 pl.update()
+        print(f"Created {len(self.patrol_locations)} patrol locations")
         self.assign_receptors_to_patrol_locations()
 
     def assign_receptors_to_patrol_locations(self):
+        print(f"Assigning {len(settings.world.grid.receptors)} Receptors to Patrol Locations")
         for receptor in settings.world.grid.receptors:
-            closest_patrol = min(self.patrol_locations, key=lambda p: p.distance_to(receptor, metric="adj manhattan"))
-            closest_patrol.patrol_locations.append(receptor)
+            closest_patrol = min(self.patrol_locations, key=lambda p: p.distance_to(receptor.location,
+                                                                                    metric="adj manhattan")
+                                                                      / math.sqrt(p.strength))
+            closest_patrol.receptors.append(receptor)
             receptor.color = closest_patrol.color
 
 
@@ -139,7 +153,7 @@ class TravelManager(Manager):
         agent_types = settings.AGENT_DATA.keys()
 
         for at in agent_types:
-            if at.team == settings.SEARCHER:
+            if settings.AGENT_DATA[at]["team"] == settings.SEARCHER:
                 self.agent_types.append(AgentType(model=at, values=settings.AGENT_DATA[at]))
 
         self.create_agents()

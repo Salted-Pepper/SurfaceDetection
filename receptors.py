@@ -58,8 +58,8 @@ class ReceptorGrid:
 
         for row in range(self.max_rows):
             for col in range(self.max_cols):
-                x_location = self.area_x_start + row * settings.GRID_SIZE
-                y_location = self.area_y_start + col * settings.GRID_SIZE
+                x_location = self.area_x_start + col * settings.GRID_SIZE
+                y_location = self.area_y_start + row * settings.GRID_SIZE
 
                 self.receptors.append(Receptor(Point(x_location, y_location)))
 

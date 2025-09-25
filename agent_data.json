@@ -1,0 +1,32 @@
+[
+  {
+    "model": "test1",
+    "endurance": 30000,
+    "radius": 200,
+    "speed": 1000,
+    "maintenance": 100,
+    "color": "indianred",
+    "team": "SEARCHER",
+    "quantity": 130
+  },
+  {
+    "model": "test2",
+    "endurance": 35000,
+    "radius": 100,
+    "speed": 300,
+    "maintenance": 200,
+    "color": "indianred",
+    "team": "SEARCHER",
+    "quantity": 80
+  },
+  {
+    "model": "test3",
+    "endurance": 20000,
+    "radius": 250,
+    "speed": 100,
+    "maintenance": 200,
+    "color": "indianred",
+    "team": "SEARCHER",
+    "quantity": 50
+  }
+]
