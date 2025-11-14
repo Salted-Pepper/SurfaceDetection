@@ -30,6 +30,7 @@ Matt describes in a page
 
 ## Results
 
-It's good
+- 2x2 matrix that shows likelihood of detections given how many UAVs / surface ships are active
+- Comparison to other algorithms
 
 ## Conclusion
