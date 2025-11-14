@@ -8,3 +8,5 @@ if __name__ == '__main__':
     world = World()
 
     world.plot()
+
+    world.search_manager.score_patrol_locations()

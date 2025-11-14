@@ -1,5 +1,6 @@
 import settings
 import numpy as np
+import pandas as pd
 
 from points import Point
 
@@ -7,6 +8,7 @@ from points import Point
 class Receptor:
     def __init__(self, point):
         self.location = point
+        self.color = None
 
         self.pheromones = 0
         self.decay = True
@@ -24,6 +26,7 @@ class Receptor:
             return True
         else:
             return False
+
 
 class ReceptorGrid:
     def __init__(self):
@@ -44,10 +47,10 @@ class ReceptorGrid:
         Creates all receptors in the grid given the settings.
         Initiates the pheromone values (0 for empty, inf for outside AoI)
         """
-        self.area_x_start =  - settings.AREA_BORDER
+        self.area_x_start = -settings.AREA_BORDER
         self.area_x_end = settings.AREA_WIDTH + settings.AREA_BORDER
 
-        self.area_y_start = - settings.AREA_BORDER
+        self.area_y_start = -settings.AREA_BORDER
         self.area_y_end = settings.BASELINE_HEIGHT + settings.AREA_BORDER
 
         num_cols = (self.area_x_end - self.area_x_start) // settings.GRID_SIZE
@@ -80,10 +83,10 @@ class ReceptorGrid:
         max_y = y + radius
 
         # see in which rows and columns this rectangle is:
-        min_row = int(max(np.floor((min_x - self.area_x_start)/ settings.GRID_SIZE), 0))
-        max_row = int(min(np.ceil((max_x - self.area_x_end)/ settings.GRID_SIZE), self.max_rows))
+        min_row = int(max(np.floor((min_x - self.area_x_start)/settings.GRID_SIZE), 0))
+        max_row = int(min(np.ceil((max_x - self.area_x_end)/settings.GRID_SIZE), self.max_rows))
 
-        min_col = int(max(np.floor((min_y - self.area_y_start) /  settings.GRID_SIZE), 0))
+        min_col = int(max(np.floor((min_y - self.area_y_start) / settings.GRID_SIZE), 0))
         max_col = int(min(np.ceil((max_y - self.area_y_end) / settings.GRID_SIZE), self.max_cols))
 
         receptors_in_radius = []
@@ -95,3 +98,10 @@ class ReceptorGrid:
                 if r.in_range_of_point(point, radius):
                     receptors_in_radius.append(r)
         return receptors_in_radius
+
+    def receptors_as_dataframe(self) -> pd.DataFrame:
+        records = []
+        for receptor in self.receptors:
+            records.append({"x": receptor.location.x, "y": receptor.location.y, "color": receptor.color})
+
+        return pd.DataFrame.from_records(records)

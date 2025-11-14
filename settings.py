@@ -14,7 +14,7 @@ AREA_ANGLE = 15
 AREA_BORDER = 100
 GRID_SIZE = 20
 
-PATROL_ZONE_ITERATIONS = 500
+PATROL_ZONE_ITERATIONS = 1500
 
 SEARCHER = "SEARCHER"
 TRAVELLER = "TRAVELLER"
@@ -34,5 +34,6 @@ def import_agent_data() -> dict:
             agent_dict[model] = agent
 
         return agent_dict
+
 
 AGENT_DATA = import_agent_data()

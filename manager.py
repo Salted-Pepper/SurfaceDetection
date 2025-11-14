@@ -80,6 +80,7 @@ class Manager:
         for at in self.agent_types:
             at.update_agents()
 
+
 class SearchManager(Manager):
     def __init__(self):
         super().__init__()
@@ -125,12 +126,12 @@ class SearchManager(Manager):
             total_strength += pl.strength
         area_size = settings.AREA_WIDTH * settings.BASELINE_HEIGHT
         for pl in self.patrol_locations:
-            pl.strength = (pl.strength/total_strength) * math.sqrt(area_size)
+            pl.strength = (pl.strength / total_strength) * math.sqrt(area_size)
 
     def distribute_patrol_locations(self):
         for _ in range(settings.PATROL_ZONE_ITERATIONS):
             for pl in self.patrol_locations:
-                    pl.observe_pressure(self.patrol_locations)
+                pl.observe_pressure(self.patrol_locations)
 
             for pl in self.patrol_locations:
                 pl.update()
@@ -145,6 +146,20 @@ class SearchManager(Manager):
                                                                       / math.sqrt(p.strength))
             closest_patrol.receptors.append(receptor)
             receptor.color = closest_patrol.color
+
+    def score_patrol_locations(self) -> None:
+        performances = []
+        total_locations = len(settings.world.grid.receptors)
+
+        for pl in self.patrol_locations:
+            assigned_grid_points = len(pl.receptors)
+            assigned_share = assigned_grid_points / total_locations
+            performances.append({"pl": pl,
+                                 "share": assigned_share,
+                                 "strength": pl.strength})
+        total_strength = sum([p["strength"] for p in performances])
+        score = sum([abs(p["share"] - (p["strength"]/total_strength)) for p in performances])
+        print(f"Patrol locations score: {score}")
 
 
 class TravelManager(Manager):

@@ -4,6 +4,7 @@ import settings
 
 point_id = 0
 
+
 class Point:
     def __init__(self, x, y):
         global point_id
@@ -39,6 +40,7 @@ class Point:
             return 0.5 * abs(self.x - other.x) + abs(self.y - other.y)
         raise ValueError(f"Invalid distance metric {metric}")
 
+
 class PatrolLocation(Point):
     def __init__(self, x, y, strength: float, radius: float):
         super().__init__(x, y)
@@ -65,7 +67,6 @@ class PatrolLocation(Point):
         self.next_x = new_x
         self.next_y = new_y
         print(f"Moving point from {self.x}, {self.y} to {self.next_x}, {self.next_y}")
-
 
     def pressure(self, other) -> tuple[float, float]:
         distance = self.distance_to(other, metric="adj manhattan")
