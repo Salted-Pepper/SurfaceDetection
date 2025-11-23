@@ -49,40 +49,53 @@ class PatrolLocation(Point):
 
         self.receptors = []
         self.color = settings.colors.pop()
-        self.next_x = None
-        self.next_y = None
+        # self.next_x = None
+        # self.next_y = None
 
         self.current_agent = None
 
-    def observe_pressure(self, all_points: list):
-        n = len(all_points)
-        new_x = 0
-        new_y = 0
+    def centralize(self) -> None:
+        receptors_inside_zone = [r for r in self.receptors if r.in_zone]
 
-        for point in all_points:
-            x_n, y_n = self.pressure(point)
-            new_x += x_n / n
-            new_y += y_n / n
+        if len(receptors_inside_zone) == 0:
+            return
 
-        self.next_x = new_x
-        self.next_y = new_y
-        print(f"Moving point from {self.x}, {self.y} to {self.next_x}, {self.next_y}")
+        avg_x = sum(r.location.x for r in receptors_inside_zone) / len(receptors_inside_zone)
+        avg_y = sum(r.location.y for r in receptors_inside_zone) / len(receptors_inside_zone)
 
-    def pressure(self, other) -> tuple[float, float]:
-        distance = self.distance_to(other, metric="adj manhattan")
-        strength = self.strength + other.strength
+        self.x = avg_x
+        self.y = avg_y
 
-        if distance < 0.001:
-            distance = 0.001
+    # def observe_pressure(self, all_points: list):
+    #     n = len(all_points)
+    #     new_x = 0
+    #     new_y = 0
+    #
+    #     for point in all_points:
+    #         x_n, y_n = self.pressure(point)
+    #         new_x += x_n / n
+    #         new_y += y_n / n
+    #
+    #     self.next_x = new_x
+    #     self.next_y = new_y
+    #     print(f"Moving point from {self.x}, {self.y} to {self.next_x}, {self.next_y}")
 
-        if strength > distance:
-            new_x = self.x - (other.x - self.x) * ((strength - distance) / distance) + random.uniform(-1, 1)
-            new_y = self.y - (other.y - self.y) * ((strength - distance) / distance) + random.uniform(-1, 1)
-        else:
-            new_x = self.x
-            new_y = self.y
-        return new_x, new_y
+    # def pressure(self, other) -> tuple[float, float]:
+    #     distance = self.distance_to(other, metric="adj manhattan")
+    #     strength = self.strength + other.strength
+    #
+    #     if distance < 0.001:
+    #         distance = 0.001
+    #
+    #     if strength > distance:
+    #         new_x = self.x - (other.x - self.x) * ((strength - distance) / distance) + random.uniform(-1, 1)
+    #         new_y = self.y - (other.y - self.y) * ((strength - distance) / distance) + random.uniform(-1, 1)
+    #     else:
+    #         new_x = self.x
+    #         new_y = self.y
+    #     return new_x, new_y
 
     def update(self):
-        self.x = max(0, min(self.next_x, settings.AREA_WIDTH))
-        self.y = max(0, min(self.next_y, settings.BASELINE_HEIGHT))
+        self.centralize()
+        # self.x = max(0, min(self.next_x, settings.AREA_WIDTH))
+        # self.y = max(0, min(self.next_y, settings.BASELINE_HEIGHT))

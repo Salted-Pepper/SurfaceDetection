@@ -130,22 +130,32 @@ class SearchManager(Manager):
 
     def distribute_patrol_locations(self):
         for _ in range(settings.PATROL_ZONE_ITERATIONS):
-            for pl in self.patrol_locations:
-                pl.observe_pressure(self.patrol_locations)
+            # for pl in self.patrol_locations:
+            #     pl.observe_pressure(self.patrol_locations)
 
             for pl in self.patrol_locations:
                 pl.update()
-        print(f"Created {len(self.patrol_locations)} patrol locations")
-        self.assign_receptors_to_patrol_locations()
 
-    def assign_receptors_to_patrol_locations(self):
+            self.update_patrol_assignments()
+        print(f"Created {len(self.patrol_locations)} patrol locations")
+
+    def update_patrol_assignments(self):
+        # TODO: Think about whether we should assign points outside the area of interest
+        #  (currently off, might affect edge behaviour)
         print(f"Assigning {len(settings.world.grid.receptors)} Receptors to Patrol Locations")
+        for pl in self.patrol_locations:
+            pl.receptors = []
+
         for receptor in settings.world.grid.receptors:
+            if not receptor.in_zone:
+                continue
+
             closest_patrol = min(self.patrol_locations, key=lambda p: p.distance_to(receptor.location,
                                                                                     metric="adj manhattan")
                                                                       / math.sqrt(p.strength))
             closest_patrol.receptors.append(receptor)
             receptor.color = closest_patrol.color
+        self.score_patrol_locations()
 
     def score_patrol_locations(self) -> None:
         performances = []

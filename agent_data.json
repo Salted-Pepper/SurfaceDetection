@@ -28,5 +28,25 @@
     "color": "indianred",
     "team": "SEARCHER",
     "quantity": 50
+  },
+  {
+    "model": "test4",
+    "endurance": 15000,
+    "radius": 200,
+    "speed": 120,
+    "maintenance": 180,
+    "color": "indianred",
+    "team": "SEARCHER",
+    "quantity": 50
+  },
+  {
+    "model": "test5",
+    "endurance": 23000,
+    "radius": 130,
+    "speed": 80,
+    "maintenance": 220,
+    "color": "indianred",
+    "team": "SEARCHER",
+    "quantity": 50
   }
 ]

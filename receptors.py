@@ -10,6 +10,8 @@ class Receptor:
         self.location = point
         self.color = None
 
+        self.in_zone = self.check_if_in_zone()
+
         self.pheromones = 0
         self.decay = True
 
@@ -26,6 +28,15 @@ class Receptor:
             return True
         else:
             return False
+
+    def check_if_in_zone(self) -> bool:
+        # TODO: Make this compatible with the trapeze shape instead of squares
+        if self.location.x < 0 or self.location.x > settings.AREA_WIDTH:
+            return False
+        elif self.location.y < 0 or self.location.y > settings.BASELINE_HEIGHT:
+            return False
+        else:
+            return True
 
 
 class ReceptorGrid:
@@ -45,7 +56,6 @@ class ReceptorGrid:
     def initiate_grid(self):
         """
         Creates all receptors in the grid given the settings.
-        Initiates the pheromone values (0 for empty, inf for outside AoI)
         """
         self.area_x_start = -settings.AREA_BORDER
         self.area_x_end = settings.AREA_WIDTH + settings.AREA_BORDER
@@ -102,6 +112,9 @@ class ReceptorGrid:
     def receptors_as_dataframe(self) -> pd.DataFrame:
         records = []
         for receptor in self.receptors:
+            if receptor.color is None:
+                receptor.color = "black"
+
             records.append({"x": receptor.location.x, "y": receptor.location.y, "color": receptor.color})
 
         return pd.DataFrame.from_records(records)
