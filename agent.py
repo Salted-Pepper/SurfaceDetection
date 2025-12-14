@@ -17,6 +17,7 @@ class Agent:
         self.remaining_maintenance = 0
         self.color = color
 
+        self.location = None
         self.patrol_location = None
 
     def __repr__(self):

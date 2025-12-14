@@ -130,13 +130,14 @@ class SearchManager(Manager):
 
     def distribute_patrol_locations(self):
         for _ in range(settings.PATROL_ZONE_ITERATIONS):
-            # for pl in self.patrol_locations:
-            #     pl.observe_pressure(self.patrol_locations)
-
             for pl in self.patrol_locations:
                 pl.update()
 
             self.update_patrol_assignments()
+
+        for p in self.patrol_locations:
+            p.create_boustrophedon_path()
+
         print(f"Created {len(self.patrol_locations)} patrol locations")
 
     def update_patrol_assignments(self):

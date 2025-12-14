@@ -1,6 +1,11 @@
 import math
-import random
+import shapely
+
+import matplotlib.pyplot as plt
+
+import geometry
 import settings
+import routes
 
 point_id = 0
 
@@ -12,6 +17,8 @@ class Point:
         point_id += 1
         self.x = x
         self.y = y
+
+        self.convex_hull = None
 
     def get_tuple(self) -> tuple:
         return self.x, self.y
@@ -49,10 +56,12 @@ class PatrolLocation(Point):
 
         self.receptors = []
         self.color = settings.colors.pop()
-        # self.next_x = None
-        # self.next_y = None
 
         self.current_agent = None
+        self.boustrophedon_path = None
+
+    def __str__(self):
+        return "Patrol Location"
 
     def centralize(self) -> None:
         receptors_inside_zone = [r for r in self.receptors if r.in_zone]
@@ -66,36 +75,34 @@ class PatrolLocation(Point):
         self.x = avg_x
         self.y = avg_y
 
-    # def observe_pressure(self, all_points: list):
-    #     n = len(all_points)
-    #     new_x = 0
-    #     new_y = 0
-    #
-    #     for point in all_points:
-    #         x_n, y_n = self.pressure(point)
-    #         new_x += x_n / n
-    #         new_y += y_n / n
-    #
-    #     self.next_x = new_x
-    #     self.next_y = new_y
-    #     print(f"Moving point from {self.x}, {self.y} to {self.next_x}, {self.next_y}")
-
-    # def pressure(self, other) -> tuple[float, float]:
-    #     distance = self.distance_to(other, metric="adj manhattan")
-    #     strength = self.strength + other.strength
-    #
-    #     if distance < 0.001:
-    #         distance = 0.001
-    #
-    #     if strength > distance:
-    #         new_x = self.x - (other.x - self.x) * ((strength - distance) / distance) + random.uniform(-1, 1)
-    #         new_y = self.y - (other.y - self.y) * ((strength - distance) / distance) + random.uniform(-1, 1)
-    #     else:
-    #         new_x = self.x
-    #         new_y = self.y
-    #     return new_x, new_y
-
     def update(self):
         self.centralize()
-        # self.x = max(0, min(self.next_x, settings.AREA_WIDTH))
-        # self.y = max(0, min(self.next_y, settings.BASELINE_HEIGHT))
+
+    def calculate_convex_hull(self):
+        self.convex_hull = geometry.graham_scan([r.location for r in self.receptors])
+
+    def create_boustrophedon_path(self):
+        self.calculate_convex_hull()
+        self.boustrophedon_path = routes.create_boustrophedon_path(self)
+
+    def show_boustrophedon_path(self):
+        fig = plt.figure()
+        ax = fig.add_subplot()
+
+        for p_1, p_2 in zip(self.convex_hull[:-1], self.convex_hull[1:]):
+            ax.plot([p_1.x, p_2.x], [p_1.y, p_2.y], color="black")
+        ax.plot([self.convex_hull[0].x, self.convex_hull[-1].x],
+                [self.convex_hull[0].y, self.convex_hull[-1].y], color="black")
+
+        for p_1, p_2 in zip(self.boustrophedon_path.waypoints[:-1], self.boustrophedon_path.waypoints[1:]):
+            ax.arrow(x=p_1.x, y=p_1.y, dx=p_2.x - p_1.x, dy=p_2.y - p_1.y, width=1,
+                     facecolor="orange", edgecolor="none")
+        plt.show()
+
+    def select_contained_points(self, points) -> list[Point]:
+        polygon = shapely.Polygon([p.get_tuple() for p in self.convex_hull])
+        contained_points = []
+        for p in points:
+            if polygon.contains(shapely.Point(p.x, p.y)):
+                contained_points.append(p)
+        return contained_points

@@ -2,7 +2,7 @@
   {
     "model": "test1",
     "endurance": 3000,
-    "radius": 200,
+    "radius": 20,
     "speed": 1000,
     "maintenance": 100,
     "color": "indianred",
@@ -12,7 +12,7 @@
   {
     "model": "test2",
     "endurance": 32000,
-    "radius": 100,
+    "radius": 10,
     "speed": 180,
     "maintenance": 200,
     "color": "indianred",
@@ -22,7 +22,7 @@
   {
     "model": "test3",
     "endurance": 20000,
-    "radius": 250,
+    "radius": 20,
     "speed": 100,
     "maintenance": 200,
     "color": "indianred",
@@ -32,7 +32,7 @@
   {
     "model": "test4",
     "endurance": 15000,
-    "radius": 200,
+    "radius": 20,
     "speed": 120,
     "maintenance": 180,
     "color": "indianred",
@@ -42,7 +42,7 @@
   {
     "model": "test5",
     "endurance": 23000,
-    "radius": 130,
+    "radius": 13,
     "speed": 80,
     "maintenance": 220,
     "color": "indianred",
