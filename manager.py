@@ -3,6 +3,7 @@ from agent import Agent
 from points import PatrolLocation
 
 import math
+import shapely
 import numpy as np
 
 
@@ -59,7 +60,11 @@ class AgentType:
 
     def create_patrol_location(self) -> PatrolLocation:
         x_coord = np.random.uniform(0, settings.AREA_WIDTH)
-        y_coord = np.random.uniform(0, settings.BASELINE_HEIGHT)
+        y_coord = np.random.uniform(0, settings.TOTAL_HEIGHT)
+        while not settings.WORLD_POLYGON.contains(shapely.Point(x_coord, y_coord)):
+            x_coord = np.random.uniform(0, settings.AREA_WIDTH)
+            y_coord = np.random.uniform(0, settings.TOTAL_HEIGHT)
+
         location = PatrolLocation(x_coord, y_coord, strength=self.speed * self.endurance, radius=self.radius)
         self.patrol_locations.append(location)
         return location
@@ -134,10 +139,10 @@ class SearchManager(Manager):
                 pl.update()
 
             self.update_patrol_assignments()
+        self.score_patrol_locations()
 
         for p in self.patrol_locations:
             p.create_boustrophedon_path()
-
         print(f"Created {len(self.patrol_locations)} patrol locations")
 
     def update_patrol_assignments(self):
@@ -156,7 +161,6 @@ class SearchManager(Manager):
                                                                       / math.sqrt(p.strength))
             closest_patrol.receptors.append(receptor)
             receptor.color = closest_patrol.color
-        self.score_patrol_locations()
 
     def score_patrol_locations(self) -> None:
         performances = []

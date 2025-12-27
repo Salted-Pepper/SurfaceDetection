@@ -1,6 +1,7 @@
 import json
 import random
 import matplotlib.colors as mcolors
+import math
 
 # World
 world = None
@@ -9,7 +10,11 @@ world_time = 0
 TIME_DELTA = 1
 BASELINE_HEIGHT = 600
 AREA_WIDTH = 4500
-AREA_ANGLE = 15
+AREA_ANGLE = 5
+EXTENSION = math.tan(AREA_ANGLE * math.pi / 180) * AREA_WIDTH
+TOTAL_HEIGHT = BASELINE_HEIGHT + 2*EXTENSION
+
+WORLD_POLYGON = None
 
 AREA_BORDER = 100
 GRID_SIZE = 20

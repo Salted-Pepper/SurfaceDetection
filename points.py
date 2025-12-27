@@ -67,6 +67,7 @@ class PatrolLocation(Point):
         receptors_inside_zone = [r for r in self.receptors if r.in_zone]
 
         if len(receptors_inside_zone) == 0:
+            self.move_to_closest_receptor()
             return
 
         avg_x = sum(r.location.x for r in receptors_inside_zone) / len(receptors_inside_zone)
@@ -77,6 +78,11 @@ class PatrolLocation(Point):
 
     def update(self):
         self.centralize()
+
+    def move_to_closest_receptor(self):
+        closest_receptor = min(settings.world.grid.receptors, key=lambda r: self.distance_to(r.location))
+        self.x = closest_receptor.location.x
+        self.y = closest_receptor.location.y
 
     def calculate_convex_hull(self):
         self.convex_hull = geometry.graham_scan([r.location for r in self.receptors])

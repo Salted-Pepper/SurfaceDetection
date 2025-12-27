@@ -1,6 +1,8 @@
 import settings
 import numpy as np
 import pandas as pd
+import shapely
+import math
 
 from points import Point
 
@@ -23,6 +25,9 @@ class Receptor:
     def __repr__(self):
         return f'Receptor at ({self.location}) with pheromones {self.pheromones}'
 
+    def __str__(self):
+        return f"r({self.location.x}, {self.location.y})"
+
     def in_range_of_point(self, point: Point, radius: float) -> bool:
         if point.distance_to(self.location) <= radius:
             return True
@@ -30,13 +35,10 @@ class Receptor:
             return False
 
     def check_if_in_zone(self) -> bool:
-        # TODO: Make this compatible with the trapeze shape instead of squares
-        if self.location.x < 0 or self.location.x > settings.AREA_WIDTH:
-            return False
-        elif self.location.y < 0 or self.location.y > settings.BASELINE_HEIGHT:
-            return False
-        else:
+        if settings.WORLD_POLYGON.contains(shapely.Point(self.location.x, self.location.y)):
             return True
+        else:
+            return False
 
 
 class ReceptorGrid:
@@ -61,7 +63,7 @@ class ReceptorGrid:
         self.area_x_end = settings.AREA_WIDTH + settings.AREA_BORDER
 
         self.area_y_start = -settings.AREA_BORDER
-        self.area_y_end = settings.BASELINE_HEIGHT + settings.AREA_BORDER
+        self.area_y_end = settings.TOTAL_HEIGHT + settings.AREA_BORDER
 
         num_cols = (self.area_x_end - self.area_x_start) // settings.GRID_SIZE
         num_rows = (self.area_y_end - self.area_y_start) // settings.GRID_SIZE
