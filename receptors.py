@@ -2,7 +2,6 @@ import settings
 import numpy as np
 import pandas as pd
 import shapely
-import math
 
 from points import Point
 

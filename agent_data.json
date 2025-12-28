@@ -7,7 +7,7 @@
     "maintenance": 100,
     "color": "indianred",
     "team": "SEARCHER",
-    "quantity": 130
+    "quantity": 10
   },
   {
     "model": "test2",
@@ -17,7 +17,7 @@
     "maintenance": 200,
     "color": "indianred",
     "team": "SEARCHER",
-    "quantity": 80
+    "quantity": 4
   },
   {
     "model": "test3",
@@ -27,7 +27,7 @@
     "maintenance": 200,
     "color": "indianred",
     "team": "SEARCHER",
-    "quantity": 50
+    "quantity": 8
   },
   {
     "model": "test4",
@@ -37,7 +37,7 @@
     "maintenance": 180,
     "color": "indianred",
     "team": "SEARCHER",
-    "quantity": 50
+    "quantity": 6
   },
   {
     "model": "test5",
@@ -47,6 +47,6 @@
     "maintenance": 220,
     "color": "indianred",
     "team": "SEARCHER",
-    "quantity": 50
+    "quantity": 10
   }
 ]

@@ -1,6 +1,8 @@
 import settings
+from points import Point
 
 agent_id = 0
+base = Point(settings.BASE_X, settings.BASE_Y)
 
 
 class Agent:
@@ -17,8 +19,9 @@ class Agent:
         self.remaining_maintenance = 0
         self.color = color
 
-        self.location = None
         self.patrol_location = None
+        self.base = base
+        self.location = base
 
     def __repr__(self):
         return (f"Agent {self.agent_id} - "
@@ -35,4 +38,8 @@ class Agent:
 
     def update_endurance(self):
         self.remaining_endurance = max(0, self.remaining_endurance - (settings.TIME_DELTA*self.speed))
+
+    def move_through_route(self) -> None:
+        pass
+
 

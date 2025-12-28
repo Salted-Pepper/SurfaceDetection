@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 
 import geometry
 import settings
-import routes
 
 point_id = 0
 
@@ -88,6 +87,7 @@ class PatrolLocation(Point):
         self.convex_hull = geometry.graham_scan([r.location for r in self.receptors])
 
     def create_boustrophedon_path(self):
+        import routes
         self.calculate_convex_hull()
         self.boustrophedon_path = routes.create_boustrophedon_path(self)
 
@@ -104,6 +104,9 @@ class PatrolLocation(Point):
             ax.arrow(x=p_1.x, y=p_1.y, dx=p_2.x - p_1.x, dy=p_2.y - p_1.y, width=1,
                      facecolor="orange", edgecolor="none")
         plt.show()
+
+    def reached_path_point(self) -> None:
+        self.boustrophedon_path.cycle_next_point()
 
     def select_contained_points(self, points) -> list[Point]:
         polygon = shapely.Polygon([p.get_tuple() for p in self.convex_hull])

@@ -8,6 +8,17 @@ class Route:
     def __repr__(self) -> str:
         return str([str(p) for p in self.waypoints])
 
+    def cycle_next_point(self) -> None:
+        """
+        Moves the next point in line to the back of the route
+        :return:
+        """
+        waypoint = self.waypoints.pop(0)
+        self.waypoints.append(waypoint)
+
+    def get_next_point(self) -> points.Point:
+        return self.waypoints[0]
+
 
 def create_boustrophedon_path(patrol_location) -> Route:
     interior_points = create_interior_points(patrol_location)
@@ -15,7 +26,7 @@ def create_boustrophedon_path(patrol_location) -> Route:
     return Route(contained_points)
 
 
-def create_interior_points(patrol_location):
+def create_interior_points(patrol_location) -> list[points.Point]:
     r = patrol_location.radius
 
     min_x = min([p.x for p in patrol_location.convex_hull]) + r

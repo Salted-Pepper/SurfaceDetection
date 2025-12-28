@@ -1,6 +1,6 @@
 import settings
 from agent import Agent
-from points import PatrolLocation
+import points
 
 import math
 import shapely
@@ -12,8 +12,7 @@ class AgentType:
         self.model = model
         self.active_agents = []
         self.inactive_agents = []
-        self.utilisation = None
-        self.last_activation = -np.inf
+        self.maintenance_agents = []
 
         self.radius = values["radius"]
         self.quantity = values["quantity"]
@@ -28,45 +27,26 @@ class AgentType:
         self.activation_interval = (self.trip_time + self.maintenance) / self.quantity
         self.concurrent_agents = int(np.floor(self.quantity * self.ideal_utilisation))
 
+        self.travel_distance = 0
         self.patrol_locations = []
-
-    def calculate_utilisation(self) -> float:
-        return len(self.active_agents) / (len(self.inactive_agents) + len(self.active_agents))
-
-    def time_since_last_activation(self) -> float:
-        return settings.world_time - self.last_activation
-
-    def allowed_activation(self) -> bool:
-        if self.activation_interval <= self.time_since_last_activation():
-            return True
-        else:
-            return False
+        self.activation_queue = []
 
     def update_agents(self):
-        exhausted_agents = []
         for agent in self.active_agents:
-            agent.update_endurance()
+            agent.move_through_route()
 
-            if agent.remaining_endurance == 0:
-                exhausted_agents.append(agent)
-
-        for agent in self.inactive_agents:
-            agent.update_maintenance()
-
-        for agent in exhausted_agents:
-            self.active_agents.remove(agent)
-            agent.start_maintenance()
-            self.inactive_agents.append(agent)
-
-    def create_patrol_location(self) -> PatrolLocation:
+    def create_patrol_location(self) -> points.PatrolLocation:
         x_coord = np.random.uniform(0, settings.AREA_WIDTH)
         y_coord = np.random.uniform(0, settings.TOTAL_HEIGHT)
         while not settings.WORLD_POLYGON.contains(shapely.Point(x_coord, y_coord)):
             x_coord = np.random.uniform(0, settings.AREA_WIDTH)
             y_coord = np.random.uniform(0, settings.TOTAL_HEIGHT)
 
-        location = PatrolLocation(x_coord, y_coord, strength=self.speed * self.endurance, radius=self.radius)
+        location = points.PatrolLocation(x_coord, y_coord, strength=self.speed * self.endurance, radius=self.radius)
         self.patrol_locations.append(location)
+
+        self.travel_distance = max(location.distance_to(points.Point(settings.BASE_X, settings.BASE_Y)),
+                                   self.travel_distance)
         return location
 
 
@@ -81,7 +61,7 @@ class Manager:
                               maintenance=at.maintenance, color=at.color)
                 at.inactive_agents.append(agent)
 
-    def update_agents(self):
+    def update_agents(self) -> None:
         for at in self.agent_types:
             at.update_agents()
 
@@ -99,33 +79,20 @@ class SearchManager(Manager):
         self.patrol_locations = []
         self.create_patrol_tessellation()
 
-    def check_activation(self):
-        for at in self.agent_types:
-            if at.calculate_utilisation() < at.ideal_utilisation and at.allowed_activation():
-                available_agents = [a for a in at.inactive_agents if a.remaining_maintenance == 0]
-                if len(available_agents) > 0:
-                    at.last_activation = settings.world_time
-                    agent = available_agents.pop()
-                    at.inactive_agents.remove(agent)
-                    at.active_agents.append(agent)
-                else:
-                    print(f"{settings.world_time} - No available agents to reach utilisation for {at.model}")
-
     def get_statistics(self) -> dict:
         stats = {"time": settings.world_time}
         for at in self.agent_types:
             stats[at.model + "-active"] = len(at.active_agents)
         return stats
 
-    def create_patrol_tessellation(self):
+    def create_patrol_tessellation(self) -> None:
         for at in self.agent_types:
             for _ in range(at.concurrent_agents):
                 self.patrol_locations.append(at.create_patrol_location())
-                print(f"Created patrol location at {self.patrol_locations[-1]}")
         self.normalize_strength()
         self.distribute_patrol_locations()
 
-    def normalize_strength(self):
+    def normalize_strength(self) -> None:
         total_strength = 0
         for pl in self.patrol_locations:
             total_strength += pl.strength
@@ -133,7 +100,7 @@ class SearchManager(Manager):
         for pl in self.patrol_locations:
             pl.strength = (pl.strength / total_strength) * math.sqrt(area_size)
 
-    def distribute_patrol_locations(self):
+    def distribute_patrol_locations(self) -> None:
         for _ in range(settings.PATROL_ZONE_ITERATIONS):
             for pl in self.patrol_locations:
                 pl.update()
@@ -145,7 +112,7 @@ class SearchManager(Manager):
             p.create_boustrophedon_path()
         print(f"Created {len(self.patrol_locations)} patrol locations")
 
-    def update_patrol_assignments(self):
+    def update_patrol_assignments(self) -> None:
         # TODO: Think about whether we should assign points outside the area of interest
         #  (currently off, might affect edge behaviour)
         print(f"Assigning {len(settings.world.grid.receptors)} Receptors to Patrol Locations")
@@ -173,7 +140,7 @@ class SearchManager(Manager):
                                  "share": assigned_share,
                                  "strength": pl.strength})
         total_strength = sum([p["strength"] for p in performances])
-        score = sum([abs(p["share"] - (p["strength"]/total_strength)) for p in performances])
+        score = sum([abs(p["share"] - (p["strength"] / total_strength)) for p in performances])
         print(f"Patrol locations score: {score}")
 
 
