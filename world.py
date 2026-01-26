@@ -17,19 +17,35 @@ class World:
         self.search_manager = SearchManager()
         self.travel_manager = TravelManager()
 
-    def plot(self):
-        fig, ax = plt.subplots()
+        self.fig = None
+        self.ax = None
+        self.plot_world()
+
+    def simulate(self):
+        while settings.world_time < settings.SIMULATION_TIME:
+            print(f"World time is {settings.world_time} - "
+                  f"active searchers: {sum([len(at.active_agents) for at in self.search_manager.agent_types])}")
+            self.search_manager.manage_agents()
+            settings.world_time += settings.TIME_DELTA
+            self.update_plot()
+
+    def plot_world(self) -> None:
+        self.fig, self.ax = plt.subplots()
 
         print("Plotting Receptors")
         df = self.grid.receptors_as_dataframe()
-        ax.scatter(df["x"], df["y"], c=df["color"])
+        self.ax.scatter(df["x"], df["y"], c=df["color"], zorder=1)
 
         print("Plotting Patrol Locations")
         for pl in self.search_manager.patrol_locations:
-            ax.scatter(pl.x, pl.y, color=pl.color, edgecolors="black", alpha=0.4)
-            ax.text(pl.x, pl.y - 2, s=str(round(pl.strength, 1)), color="black")
-        ax.set_xlim(0, settings.AREA_WIDTH)
-        ax.set_ylim(0, settings.TOTAL_HEIGHT)
+            self.ax.scatter(pl.x, pl.y, color=pl.color, edgecolors="black", alpha=0.4)
+            self.ax.text(pl.x, pl.y - 2, s=str(round(pl.strength, 1)), color="black")
+        self.ax.set_xlim(0, settings.AREA_WIDTH)
+        self.ax.set_ylim(0, settings.TOTAL_HEIGHT)
+
+    def update_plot(self) -> None:
+        self.search_manager.plot_agents(self.ax)
+        plt.pause(0.1)
 
 
 def initiate_world_polygon():

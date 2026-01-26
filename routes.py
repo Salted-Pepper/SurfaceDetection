@@ -2,7 +2,7 @@ import points
 
 
 class Route:
-    def __init__(self, waypoints):
+    def __init__(self, waypoints: list[points.Point]):
         self.waypoints = waypoints
 
     def __repr__(self) -> str:

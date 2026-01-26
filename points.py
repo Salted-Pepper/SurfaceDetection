@@ -56,11 +56,10 @@ class PatrolLocation(Point):
         self.receptors = []
         self.color = settings.colors.pop()
 
-        self.current_agent = None
         self.boustrophedon_path = None
 
     def __str__(self):
-        return "Patrol Location"
+        return f"Patrol Location {self.color}"
 
     def centralize(self) -> None:
         receptors_inside_zone = [r for r in self.receptors if r.in_zone]
@@ -104,9 +103,6 @@ class PatrolLocation(Point):
             ax.arrow(x=p_1.x, y=p_1.y, dx=p_2.x - p_1.x, dy=p_2.y - p_1.y, width=1,
                      facecolor="orange", edgecolor="none")
         plt.show()
-
-    def reached_path_point(self) -> None:
-        self.boustrophedon_path.cycle_next_point()
 
     def select_contained_points(self, points) -> list[Point]:
         polygon = shapely.Polygon([p.get_tuple() for p in self.convex_hull])
