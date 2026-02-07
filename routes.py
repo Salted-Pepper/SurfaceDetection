@@ -20,13 +20,20 @@ class Route:
         return self.waypoints[0]
 
 
-def create_boustrophedon_path(patrol_location) -> Route:
-    interior_points = create_interior_points(patrol_location)
+def create_boustrophedon_path(patrol_location: points.PatrolLocation) -> Route:
+    interior_points = create_sorted_interior_points(patrol_location)
     contained_points = patrol_location.select_contained_points(interior_points)
     return Route(contained_points)
 
 
-def create_interior_points(patrol_location) -> list[points.Point]:
+def create_sorted_interior_points(patrol_location: points.PatrolLocation) -> list[points.Point]:
+    """
+    Creates interior points for the boundaries of the convex hull.
+    Points are listed in a boustrophedon path order for later use
+    :param patrol_location:
+    :return: List of points sorted from left to right,
+        varying top to bottem and bottem to top for boustrophedon pathing.
+    """
     r = patrol_location.radius
 
     min_x = min([p.x for p in patrol_location.convex_hull]) + r

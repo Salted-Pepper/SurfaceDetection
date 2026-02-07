@@ -43,20 +43,29 @@ class Agent:
     def start_maintenance(self):
         self.remaining_maintenance = self.maintenance_time
 
-    def update_maintenance(self):
+    def update_maintenance(self) -> bool:
+        finished = False
         self.remaining_maintenance = max(0, self.remaining_maintenance - settings.TIME_DELTA)
         if self.remaining_maintenance == 0:
             self.remaining_endurance = self.endurance
+            finished = True
+        return finished
 
     def update_endurance(self):
         self.remaining_endurance = max(0, self.remaining_endurance - (settings.TIME_DELTA*self.speed))
 
     def move_through_route(self) -> None:
         turn_travel = self.speed * settings.TIME_DELTA
-        print(f"Agent {self.agent_id} at {self.location} - {self.patrol_location.color} - heading to {self.route.get_next_point()}")
+        i = 0
         while turn_travel > 0:
             goal = self.route.get_next_point()
             dist = self.location.distance_to(goal)
+
+            i += 1
+            if i > 1000:
+                raise ValueError(f"{self} stuck at {self.location}; color: {self.patrol_location.color},"
+                                 f"{self.returning}, {goal}, {dist}")
+
             if dist > turn_travel:
                 share_traveled = turn_travel / dist
                 self.location.x = self.location.x * (1-share_traveled) + goal.x * share_traveled
@@ -65,6 +74,7 @@ class Agent:
                 self.remaining_endurance -= turn_travel
             else:
                 self.remaining_endurance -= dist
+                self.location.x,  self.location.y = self.base.x, self.base.y
                 if self.returning:
                     self.enter_base()
                     return
@@ -74,6 +84,7 @@ class Agent:
                     self.route.cycle_next_point()
 
     def return_to_base(self) -> None:
+        self.returning = True
         self.route = routes.Route([self.base])
 
     def enter_base(self) -> None:
@@ -81,6 +92,7 @@ class Agent:
         self.remaining_maintenance = self.maintenance_time
         self.returning = False
         self.called_replacement = False
+        self.start_maintenance()
 
         if self.plot_object is not None:
             self.plot_object.set_visible(False)

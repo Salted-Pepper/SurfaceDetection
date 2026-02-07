@@ -1,7 +1,7 @@
 [
   {
     "model": "test1",
-    "endurance": 3000,
+    "endurance": 12000,
     "radius": 20,
     "speed": 1000,
     "maintenance": 100,
@@ -21,7 +21,7 @@
   },
   {
     "model": "test3",
-    "endurance": 20000,
+    "endurance": 32000,
     "radius": 20,
     "speed": 100,
     "maintenance": 200,
@@ -31,7 +31,7 @@
   },
   {
     "model": "test4",
-    "endurance": 15000,
+    "endurance": 18000,
     "radius": 20,
     "speed": 120,
     "maintenance": 180,
