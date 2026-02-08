@@ -1,14 +1,20 @@
+import copy
+import math
+import random
+
+import shapely
+import numpy as np
+from abc import abstractmethod
+
 import settings
 from agent import Agent
 import points
 
-import copy
-import math
-import shapely
-import numpy as np
-
 import logging
 logger = logging.getLogger(__name__)
+
+searcher_base = points.Point(settings.BASE_X, settings.BASE_Y)
+exit_point = points.Point(settings.BASE_X, settings.BASE_Y)
 
 
 class AgentType:
@@ -102,8 +108,6 @@ class AgentType:
 
     def call_next_agent(self, patrol_location: points.PatrolLocation) -> None:
         if len(self.inactive_agents) == 0:
-            for pl in self.patrol_locations:
-                logger.error(pl)
             raise ValueError(f"No inactive agents available for {self.model} "
                              f"- agents in maint: {self.maintenance_agents}")
         next_agent = self.inactive_agents.pop()
@@ -115,15 +119,23 @@ class Manager:
     def __init__(self):
         self.agent_types = []
 
+    @abstractmethod
     def create_agents(self) -> None:
-        for at in self.agent_types:
-            for _ in range(at.quantity):
-                agent = Agent(model=at.model, speed=at.speed, endurance=at.endurance,
-                              maintenance=at.maintenance)
-                at.inactive_agents.append(agent)
+        pass
+
+    @abstractmethod
+    def manage_agents(self) -> None:
+        pass
+
+    @abstractmethod
+    def plot_agents(self, ax) -> None:
+        pass
 
 
 class SearchManager(Manager):
+    """
+    Oversees several Agent Types that each are responsible for assigned patrol locations.
+    """
     def __init__(self):
         super().__init__()
         agent_types = settings.AGENT_DATA.keys()
@@ -135,6 +147,17 @@ class SearchManager(Manager):
         self.create_agents()
         self.patrol_locations = []
         self.create_patrol_tessellation()
+
+    def create_agents(self) -> None:
+        for at in self.agent_types:
+            for _ in range(at.quantity):
+                agent = Agent(model=at.model, speed=at.speed, endurance=at.endurance,
+                              maintenance=at.maintenance, base=searcher_base)
+                at.inactive_agents.append(agent)
+
+    def manage_agents(self) -> None:
+        for agent_type in self.agent_types:
+            agent_type.update_agents()
 
     def get_statistics(self) -> dict:
         stats = {"time": settings.world_time}
@@ -204,22 +227,56 @@ class SearchManager(Manager):
         score = sum([abs(p["share"] - (p["strength"] / total_strength)) for p in performances])
         print(f"Patrol locations score: {score}")
 
-    def manage_agents(self) -> None:
-        for agent_type in self.agent_types:
-            agent_type.update_agents()
-
-    def plot_agents(self, ax) -> None:
+    def plot_agent_types(self, ax) -> None:
         for at in self.agent_types:
             at.plot_agents(ax)
 
 
 class TravelManager(Manager):
+    """
+    Oversees agents passing through the zone directly
+    """
     def __init__(self):
         super().__init__()
-        agent_types = settings.AGENT_DATA.keys()
-
-        for at in agent_types:
-            if settings.AGENT_DATA[at]["team"] == settings.SEARCHER:
-                self.agent_types.append(AgentType(model=at, values=settings.AGENT_DATA[at]))
+        self.active_agents = []
+        self.stats = []
 
         self.create_agents()
+
+    def create_agents(self) -> None:
+        self.generate_entries()
+
+    def generate_entries(self):
+        # TODO: change random entry process
+        if random.uniform(0, 1) > 0.8:
+            self.new_entry()
+
+    def new_entry(self):
+        # TODO: Replace characteristics with actual values
+        entry_y = random.uniform(settings.ENTRY_Y_MIN, settings.ENTRY_Y_MAX)
+        entry_point = points.Point(settings.ENTRY_X, entry_y)
+        model = "tbd"
+        speed = 25
+        new_agent = Agent(model, endurance=math.inf, speed=speed, maintenance=0, base=exit_point)
+        self.active_agents.append(new_agent)
+        new_agent.location = entry_point
+        new_agent.return_to_base()
+
+    def manage_agents(self) -> None:
+        self.generate_entries()
+
+        for agent in copy.copy(self.active_agents):
+            agent.move_through_route()
+            print(f"traveller is at {agent.location}")
+            if not agent.returning:
+                self.active_agents.remove(agent)
+
+    def plot_agents(self, ax) -> None:
+        for agent in self.active_agents:
+            if agent.plot_object is None:
+                agent.plot_object = ax.scatter(agent.location.x, agent.location.y,
+                                               color="forestgreen", marker="<", zorder=2,
+                                               edgecolor="black")
+            else:
+                agent.plot_object.set_offsets([[agent.location.x, agent.location.y]])
+

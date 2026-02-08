@@ -43,7 +43,7 @@ class Point:
         elif metric == "manhattan":
             return abs(self.x - other.x) + abs(self.y - other.y)
         elif metric == "adj manhattan":
-            return 0.5 * abs(self.x - other.x) + abs(self.y - other.y)
+            return abs(self.x - other.x) + (1-settings.SEARCH_VERTICAL_ALIGNMENT) * abs(self.y - other.y)
         raise ValueError(f"Invalid distance metric {metric}")
 
 

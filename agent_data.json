@@ -40,13 +40,13 @@
     "quantity": 6
   },
   {
-    "model": "test5",
-    "endurance": 23000,
-    "radius": 13,
+    "model": "fish_boat_test5",
+    "endurance": 26000,
+    "radius": 3,
     "speed": 80,
     "maintenance": 220,
     "color": "indianred",
     "team": "SEARCHER",
-    "quantity": 10
+    "quantity": 230
   }
 ]

@@ -1,11 +1,15 @@
 import settings
 from receptors import ReceptorGrid
 from manager import SearchManager, TravelManager
+import logging
 
 import shapely
 import matplotlib
 from matplotlib import pyplot as plt
+
 matplotlib.use("TkAgg")
+
+logger = logging.getLogger(__name__)
 
 
 class World:
@@ -23,20 +27,21 @@ class World:
 
     def simulate(self):
         while settings.world_time < settings.SIMULATION_TIME:
-            print(f"World time is {settings.world_time} - "
-                  f"active searchers: {sum([len(at.active_agents) for at in self.search_manager.agent_types])}")
+            logger.info(f"World time is {settings.world_time} - "
+                        f"active searchers: {sum([len(at.active_agents) for at in self.search_manager.agent_types])}")
             self.search_manager.manage_agents()
+            self.travel_manager.manage_agents()
             settings.world_time += settings.TIME_DELTA
             self.update_plot()
 
     def plot_world(self) -> None:
         self.fig, self.ax = plt.subplots()
 
-        print("Plotting Receptors")
+        logger.info("Plotting Receptors")
         df = self.grid.receptors_as_dataframe()
         self.ax.scatter(df["x"], df["y"], c=df["color"], zorder=1)
 
-        print("Plotting Patrol Locations")
+        logger.info("Plotting Patrol Locations")
         for pl in self.search_manager.patrol_locations:
             self.ax.scatter(pl.x, pl.y, color=pl.color, edgecolors="black", alpha=0.4)
             self.ax.text(pl.x, pl.y - 2, s=str(round(pl.strength, 1)), color="black")
@@ -44,7 +49,9 @@ class World:
         self.ax.set_ylim(0, settings.TOTAL_HEIGHT)
 
     def update_plot(self) -> None:
-        self.search_manager.plot_agents(self.ax)
+        self.search_manager.plot_agent_types(self.ax)
+        self.travel_manager.plot_agents(self.ax)
+        self.ax.set_title(f"World At {settings.world_time}")
         plt.pause(0.1)
 
 

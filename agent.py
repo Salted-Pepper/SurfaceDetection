@@ -5,11 +5,10 @@ from points import Point
 import copy
 
 agent_id = 0
-base = Point(settings.BASE_X, settings.BASE_Y)
 
 
 class Agent:
-    def __init__(self, model: str, endurance: float, speed: float, maintenance: float):
+    def __init__(self, model: str, endurance: float, speed: float, maintenance: float, base: Point):
         global agent_id
 
         self.agent_id = agent_id
@@ -23,7 +22,7 @@ class Agent:
 
         self.patrol_location = None
         self.base = base
-        self.location = copy.deepcopy(base)
+        self.location = copy.deepcopy(self.base)
         self.route = None
         self.returning = False
         self.called_replacement = False
