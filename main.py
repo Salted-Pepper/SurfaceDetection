@@ -3,6 +3,9 @@
 #   - Ensure agent types take over assigned zones during changes
 import logging
 import datetime
+
+import pandas as pd
+
 from world import World
 
 today = datetime.date.today().strftime("%d_%m_%Y")
@@ -15,4 +18,5 @@ if __name__ == '__main__':
     world = World()
     world.simulate()
 
-
+    df = world.travel_manager.stats_to_df()
+    df[df["detected"]].hist(["time"])

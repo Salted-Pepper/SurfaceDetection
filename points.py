@@ -78,7 +78,7 @@ class PatrolLocation(Point):
         self.centralize()
 
     def move_to_closest_receptor(self):
-        closest_receptor = min(settings.world.grid.receptors, key=lambda r: self.distance_to(r.location))
+        closest_receptor = min(settings.world.receptor_grid.receptors, key=lambda r: self.distance_to(r.location))
         self.x = closest_receptor.location.x
         self.y = closest_receptor.location.y
 
